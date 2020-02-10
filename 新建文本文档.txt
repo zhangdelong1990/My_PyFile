@@ -1,0 +1,95 @@
+import util
+times = 1
+print('你好，我是聊天机器人-小象宝宝。\n有人说我有10岁人类的智商，你想试试吗？\n我可以回答你6个问题，来吧。')
+while True:
+    me = input('第{}个问题：'.format(times))
+    print('小象宝宝：' + util.talk(me))
+    if me == '再见' or times >= 6:
+        print('小象宝宝：我要走了，祝你学得快乐，再见！')
+        break
+    times += 1
+
+
+
+#####################
+## 载入所需库
+import cv2
+import time
+import matplotlib.pyplot as plt
+import numpy as np
+import urllib.request
+
+%matplotlib inline
+
+def style_transfer(pathOut='',
+                   model='',
+                   width=None,
+                   jpg_quality=80):
+
+    ## 读入原始图片
+    req = urllib.request.urlopen('http://www.chinahadoop.cn/bag1.jpg')
+    arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
+    img = cv2.imdecode(arr, -1) 
+    (h, w) = img.shape[:2]
+    if width is not None:
+        img = cv2.resize(img, (width, round(width * h / w)), interpolation=cv2.INTER_CUBIC)
+        (h, w) = img.shape[:2]
+
+    ## 加载预训练模型
+    print('加载预训练模型......')
+    net = cv2.dnn.readNetFromTorch(model)
+
+    ## 前馈网络计算
+    blob = cv2.dnn.blobFromImage(img, 1.0, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
+    net.setInput(blob)
+    start = time.time()
+    output = net.forward()
+    end = time.time()
+    
+    print('风格迁移用时：%s秒'%(end - start))
+
+    ## 输出结果
+    output = output.reshape((3, output.shape[2], output.shape[3]))
+    output[0] += 103.939
+    output[1] += 116.779
+    output[2] += 123.680
+    output = output.transpose(1, 2, 0)
+    cv2.imwrite(pathOut, output, [int(cv2.IMWRITE_JPEG_QUALITY), jpg_quality])
+    outputImg = cv2.imread(pathOut)
+    
+    plt.figure(figsize=(15,15))
+    plt.subplot(131)
+    plt.imshow(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+    plt.subplot(132)
+    imgStyle = cv2.imread('../data/muse.jpg')
+    plt.imshow(cv2.cvtColor(imgStyle, cv2.COLOR_BGR2RGB))
+    plt.subplot(133)
+    plt.imshow(cv2.cvtColor(outputImg, cv2.COLOR_BGR2RGB))
+    plt.show()
+
+pathOut = '../../tmp/result_img01.jpg'
+model = '../data/the_muse.t7'
+style_transfer(pathOut, model, width=500)
+
+
+
+##########################
+import pandas as pd
+import matplotlib.pyplot as plt
+
+%matplotlib inline
+
+# 读取文件
+df = pd.read_csv("../data/ask_time.csv")
+
+# 将秒转换成每天24小时制时间
+df['time'] = df['createdTime'].astype(int) % 86400 // 3600
+
+# 时区转换
+df['time'] = (df['time'] + 8) % 24
+
+# 按从0点到23点显示
+results_df = df['time'].value_counts().sort_index()
+
+results_df.plot.bar()
+plt.show()
