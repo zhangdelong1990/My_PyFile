@@ -1,18 +1,5 @@
-import util
-times = 1
-print('ÄãºÃ£¬ÎÒÊÇÁÄÌì»úÆ÷ÈË-Ğ¡Ïó±¦±¦¡£\nÓĞÈËËµÎÒÓĞ10ËêÈËÀàµÄÖÇÉÌ£¬ÄãÏëÊÔÊÔÂğ£¿\nÎÒ¿ÉÒÔ»Ø´ğÄã6¸öÎÊÌâ£¬À´°É¡£')
-while True:
-    me = input('µÚ{}¸öÎÊÌâ£º'.format(times))
-    print('Ğ¡Ïó±¦±¦£º' + util.talk(me))
-    if me == 'ÔÙ¼û' or times >= 6:
-        print('Ğ¡Ïó±¦±¦£ºÎÒÒª×ßÁË£¬×£ÄãÑ§µÃ¿ìÀÖ£¬ÔÙ¼û£¡')
-        break
-    times += 1
-
-
-
 #####################
-## ÔØÈëËùĞè¿â
+## è½½å…¥æ‰€éœ€åº“
 import cv2
 import time
 import matplotlib.pyplot as plt
@@ -26,7 +13,7 @@ def style_transfer(pathOut='',
                    width=None,
                    jpg_quality=80):
 
-    ## ¶ÁÈëÔ­Ê¼Í¼Æ¬
+    ## è¯»å…¥åŸå§‹å›¾ç‰‡
     req = urllib.request.urlopen('http://www.chinahadoop.cn/bag1.jpg')
     arr = np.asarray(bytearray(req.read()), dtype=np.uint8)
     img = cv2.imdecode(arr, -1) 
@@ -35,20 +22,20 @@ def style_transfer(pathOut='',
         img = cv2.resize(img, (width, round(width * h / w)), interpolation=cv2.INTER_CUBIC)
         (h, w) = img.shape[:2]
 
-    ## ¼ÓÔØÔ¤ÑµÁ·Ä£ĞÍ
-    print('¼ÓÔØÔ¤ÑµÁ·Ä£ĞÍ......')
+    ## åŠ è½½é¢„è®­ç»ƒæ¨¡å‹
+    print('åŠ è½½é¢„è®­ç»ƒæ¨¡å‹......')
     net = cv2.dnn.readNetFromTorch(model)
 
-    ## Ç°À¡ÍøÂç¼ÆËã
+    ## å‰é¦ˆç½‘ç»œè®¡ç®—
     blob = cv2.dnn.blobFromImage(img, 1.0, (w, h), (103.939, 116.779, 123.680), swapRB=False, crop=False)
     net.setInput(blob)
     start = time.time()
     output = net.forward()
     end = time.time()
     
-    print('·ç¸ñÇ¨ÒÆÓÃÊ±£º%sÃë'%(end - start))
+    print('é£æ ¼è¿ç§»ç”¨æ—¶ï¼š%sç§’'%(end - start))
 
-    ## Êä³ö½á¹û
+    ## è¾“å‡ºç»“æœ
     output = output.reshape((3, output.shape[2], output.shape[3]))
     output[0] += 103.939
     output[1] += 116.779
@@ -79,16 +66,16 @@ import matplotlib.pyplot as plt
 
 %matplotlib inline
 
-# ¶ÁÈ¡ÎÄ¼ş
+# è¯»å–æ–‡ä»¶
 df = pd.read_csv("../data/ask_time.csv")
 
-# ½«Ãë×ª»»³ÉÃ¿Ìì24Ğ¡Ê±ÖÆÊ±¼ä
+# å°†ç§’è½¬æ¢æˆæ¯å¤©24å°æ—¶åˆ¶æ—¶é—´
 df['time'] = df['createdTime'].astype(int) % 86400 // 3600
 
-# Ê±Çø×ª»»
+# æ—¶åŒºè½¬æ¢
 df['time'] = (df['time'] + 8) % 24
 
-# °´´Ó0µãµ½23µãÏÔÊ¾
+# æŒ‰ä»0ç‚¹åˆ°23ç‚¹æ˜¾ç¤º
 results_df = df['time'].value_counts().sort_index()
 
 results_df.plot.bar()
